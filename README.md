@@ -63,7 +63,7 @@ pnpm dev
 
 ## 📸 Screenshots
 
-*(Add screenshots of your app here)*
+![App Screenshot](frontend/public/screenshot.png)
 
 ## 📄 License
 
