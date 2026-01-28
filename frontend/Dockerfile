@@ -25,6 +25,9 @@ FROM nginx:alpine
 # Copy built assets from builder
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 
+# Copy Nginx config
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose port
 EXPOSE 80
 
