@@ -51,7 +51,6 @@ function App() {
                   color="danger"
                   size="sm"
                   onPress={reset}
-                  startContent={<UtensilsCrossed size={16} />}
                 >
                   Start Over
                 </Button>
