@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    networks:
+      - fridge-chef-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "3000:80"
+    networks:
+      - fridge-chef-network
+    depends_on:
+      - backend
+
+networks:
+  fridge-chef-network:
+    driver: bridge

@@ -1,0 +1,17 @@
+# Git
+.git
+.gitignore
+
+# Go
+bin/
+*.exe
+*.test
+*.out
+go.work
+
+# Environment
+.env
+.env.*
+
+# OS
+.DS_Store
