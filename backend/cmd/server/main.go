@@ -9,6 +9,7 @@ import (
 	"fridge-chef-backend/internal/usecase"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
@@ -33,6 +34,9 @@ func main() {
 		BodyLimit:    50 * 1024 * 1024, // 50MB for image uploads
 		ErrorHandler: customErrorHandler,
 	})
+
+	// Enable CORS
+	app.Use(cors.New())
 
 	// Setup routes
 	handler.SetupRoutes(app, analysisHandler)

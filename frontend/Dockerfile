@@ -16,6 +16,10 @@ COPY frontend ./frontend
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
+# Build args
+ARG VITE_API_BASE_URL=""
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 # Build the frontend
 RUN pnpm --filter frontend build
 
