@@ -1,15 +1,13 @@
 import { Button, Card, CardBody, Progress } from '@heroui/react'
-import { Camera, ImagePlus, Sparkles, Trash2, Upload } from 'lucide-react'
+import { ImagePlus, Sparkles, Trash2, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useAppStore } from '@/store/useAppStore'
-import { CameraCapture } from './CameraCapture'
 
 export const ImageUploader = () => {
   const { setImage, analyzeImage, isAnalyzing } = useAppStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [isCameraOpen, setIsCameraOpen] = useState(false)
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -50,16 +48,6 @@ export const ImageUploader = () => {
     fileInputRef.current?.click()
   }
 
-  const handleCameraClick = () => {
-    setIsCameraOpen(true)
-  }
-
-  const handleCameraCapture = (imageSrc: string) => {
-    setPreview(imageSrc)
-    setImage(imageSrc)
-    setIsCameraOpen(false)
-  }
-
   const handleAnalyze = () => {
     if (preview) {
       analyzeImage(preview)
@@ -76,11 +64,6 @@ export const ImageUploader = () => {
 
   return (
     <>
-      <CameraCapture
-        isOpen={isCameraOpen}
-        onClose={() => setIsCameraOpen(false)}
-        onCapture={handleCameraCapture}
-      />
       <Card
         className={`border-none shadow-xl bg-content1/80 backdrop-blur-md transition-all duration-300 ${
           isDragging ? 'ring-2 ring-primary scale-[1.02]' : ''
@@ -177,19 +160,10 @@ export const ImageUploader = () => {
                 >
                   Upload
                 </Button>
-                <Button
-                  color="secondary"
-                  variant="flat"
-                  className="flex-1 font-semibold h-14 text-base"
-                  startContent={<Camera size={18} />}
-                  onPress={handleCameraClick}
-                >
-                  Camera
-                </Button>
               </>
             ) : isAnalyzing ? (
               <div className="w-full space-y-3">
-                <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-600/20 p-4 border border-green-500/30">
+                <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-600/20 pt-2 px-2 border border-green-500/30">
                   <div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-green-400/20 to-transparent animate-[shimmer_2s_infinite]"
                     style={{

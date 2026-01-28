@@ -29,6 +29,7 @@ export const useAppStore = create<AppState>((set) => ({
 				description: `Found ${result.ingredients_detected.length} ingredients and ${result.recipes.length} delicious recipes`,
 				color: "success",
 				timeout: 3000,
+				size: "md",
 				shouldShowTimeoutProgress: true,
 				classNames: {
 					base: "bg-green-500 z-[9999]",
@@ -55,6 +56,7 @@ export const useAppStore = create<AppState>((set) => ({
 				color: "danger",
 				timeout: 3000,
 				shouldShowTimeoutProgress: true,
+				size: "md",
 				classNames: {
 					base: "bg-red-500 z-[9999]",
 					title: "text-white",
