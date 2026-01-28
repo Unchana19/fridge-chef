@@ -104,7 +104,7 @@ export const RecipeCard = ({ recipe }: RecipeCardProps) => {
                   variant="dot"
                   color="primary"
                   classNames={{
-                    base: 'bg-primary/5 border-primary/20 px-2 py-1',
+                    base: 'bg-primary/5 border-primary/20 px-2 py-1 capitalize',
                   }}
                 >
                   {ing}
