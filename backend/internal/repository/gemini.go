@@ -9,8 +9,7 @@ import (
 
 	"fridge-chef-backend/internal/domain"
 
-	"github.com/google/generative-ai-go/genai"
-	"google.golang.org/api/option"
+	"google.golang.org/genai"
 )
 
 type geminiRepository struct {
@@ -23,15 +22,10 @@ func NewGeminiRepository(apiKey string) domain.AIRepository {
 }
 
 func (r *geminiRepository) AnalyzeImage(ctx context.Context, imageBase64 string) (*domain.AnalysisResult, error) {
-	client, err := genai.NewClient(ctx, option.WithAPIKey(r.apiKey))
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: r.apiKey})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Gemini client: %w", err)
 	}
-	defer client.Close()
-
-	model := client.GenerativeModel("gemini-2.0-flash")
-	model.SetTemperature(0.4)
-	model.ResponseMIMEType = "application/json"
 
 	// Parse base64 image
 	imageData, mimeType, err := parseBase64Image(imageBase64)
@@ -60,28 +54,38 @@ Respond in this exact JSON format:
 
 The shopping_list_suggestions should contain common ingredients that would complement the detected ingredients but are not visible in the image.`
 
-	resp, err := model.GenerateContent(ctx,
-		genai.ImageData(mimeType, imageData),
-		genai.Text(prompt),
-	)
+	resp, err := client.Models.GenerateContent(ctx, "gemini-3-flash-preview", []*genai.Content{
+		{
+			Parts: []*genai.Part{
+				{Text: prompt},
+				{
+					InlineData: &genai.Blob{
+						Data:     imageData,
+						MIMEType: mimeType,
+					},
+				},
+			},
+		},
+	}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate content: %w", err)
 	}
 
-	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
-		return nil, fmt.Errorf("no response from Gemini")
-	}
-
-	// Extract text response
-	textPart, ok := resp.Candidates[0].Content.Parts[0].(genai.Text)
-	if !ok {
-		return nil, fmt.Errorf("unexpected response type from Gemini")
+	text := resp.Text()
+	if text == "" {
+		return nil, fmt.Errorf("empty response from Gemini")
 	}
 
 	// Parse JSON response
 	var result domain.AnalysisResult
-	if err := json.Unmarshal([]byte(textPart), &result); err != nil {
-		return nil, fmt.Errorf("failed to parse Gemini response: %w", err)
+	if err := json.Unmarshal([]byte(text), &result); err != nil {
+		// Try to clean up markdown code blocks if present
+		cleanedText := strings.TrimPrefix(text, "```json")
+		cleanedText = strings.TrimPrefix(cleanedText, "```")
+		cleanedText = strings.TrimSuffix(cleanedText, "```")
+		if err := json.Unmarshal([]byte(cleanedText), &result); err != nil {
+			return nil, fmt.Errorf("failed to parse Gemini response: %w", err)
+		}
 	}
 
 	return &result, nil
@@ -98,6 +102,10 @@ func parseBase64Image(dataURL string) ([]byte, string, error) {
 		// Extract MIME type
 		metaParts := strings.SplitN(parts[0], ";", 2)
 		mimeType := strings.TrimPrefix(metaParts[0], "data:")
+		// Fix double image prefix if present (e.g. image/image/png)
+		if strings.HasPrefix(mimeType, "image/image/") {
+			mimeType = strings.TrimPrefix(mimeType, "image/")
+		}
 
 		// Decode base64
 		data, err := base64.StdEncoding.DecodeString(parts[1])
